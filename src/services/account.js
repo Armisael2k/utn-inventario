@@ -2,7 +2,6 @@ import pool from "./pool";
 import { sign } from "./user";
 import { clientError, notFound, ok } from "./httpResponses";
 import bcrypt from "bcryptjs";
-import { setCookie } from "nookies";
 
 const defaultPermissons = { //Permisos provicionales
   create_user: true,
@@ -26,24 +25,19 @@ export async function get(username) {
   }
 }
 
-export async function auth(res, username, password) {
+export async function auth(username, password) {
   try {
     const result = await get(username);
-    if ( result.statusCode !== 200 ) {
-      return result
-    }
-    else if ( await bcrypt.compare(password, result.body.account.password) ) {
-      const token = sign({...result.body.account, defaultPermissons});
-      setCookie(res, "session", "body", {...result.body.account, defaultPermissons});
+    if ( result.statusCode !== 200 )
+      return result;
+    else if ( await bcrypt.compare(password, result.body.account.password) )
       return ok({
-        token: token //Permisos provicionales
+        token:  sign({...result.body.account, defaultPermissons}) //Permisos provicionales
       });
-    }
-    else {
+    else
       return notFound({
         message: "Credenciales invalidas"
       });
-    }
   } catch (err) {
     console.log(err.message);
     return clientError(err);
