@@ -1,5 +1,4 @@
 import pool from "./pool";
-import { sign } from "./user";
 import { clientError, notFound, ok } from "./httpResponses";
 import bcrypt from "bcryptjs";
 
@@ -32,7 +31,7 @@ export async function auth(username, password) {
       return result;
     else if ( await bcrypt.compare(password, result.body.account.password) )
       return ok({
-        token:  sign({...result.body.account, defaultPermissons}) //Permisos provicionales
+        account: {...result.body.account, permissions: defaultPermissons} //Permisos provicionales
       });
     else
       return notFound({

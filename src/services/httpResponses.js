@@ -1,4 +1,4 @@
-export function ok(body) {
+export function ok(body={}) {
   return {
     statusCode: 200,
     body: body

@@ -1,15 +1,19 @@
-import AuthContext from "@/context/AuthContext";
-import withoutAuth from "@/hooks/without-auth";
+import withoutAuth from "@/hooks/ssr/without-auth";
+import signIn from "@/hooks/account/signIn";
 import Image from "next/image";
-import { useContext } from "react";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { useForm } from "react-hook-form";
 import { LoadingButton } from "@mui/lab";
-import { Person, Lock } from "@mui/icons-material";
 import Logo from "@/assets/logo.png";
 import sleep from "@/utils/sleep";
 import BackgroundParticles from "@/components/BackgroundParticles";
+import FormTextField from "@/components/FormTextField";
+import {
+  Person as PersonIcon,
+  Lock as LockIcon,
+  Login as LoginIcon
+} from "@mui/icons-material";
 import {
   TextField,
   InputAdornment,
@@ -17,7 +21,7 @@ import {
   Typography,
 } from "@mui/material";
 
-const signInFormSchema = yup.object().shape({
+const formSchema = yup.object().shape({
   username: 
     yup.string().trim()
     .required("Obligatorio")
@@ -29,16 +33,13 @@ const signInFormSchema = yup.object().shape({
 });
 
 export default function Login() {
-  withoutAuth();
-
-  const { signIn } = useContext(AuthContext);
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
   } = useForm({
-    resolver: yupResolver(signInFormSchema)
+    resolver: yupResolver(formSchema)
   });
 
   const handleSignIn = async (data, e) => {
@@ -107,49 +108,34 @@ export default function Login() {
             gap: 2,
           }}
         >
-          <TextField
-            variant="outlined"
-            label={errors.username?.message || "Usuario"}
+          <FormTextField
+            hook={{register, watch, errors}}
+            fieldName="username"
+            label="Usuario"
             placeholder="Usuario"
-            {...register("username")}
-            focused={watch("username") ? true : false}
-            error={errors.username ? true : false}
             defaultValue="jesus"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Person/>
-                </InputAdornment>
-              ),
-            }}
+            endAdornment={<PersonIcon/>}
           />
-          <TextField
-            variant="outlined"
-            label={errors.password?.message || "Contraseña"}
+          <FormTextField
+            hook={{register, watch, errors}}
+            fieldName="password"
+            label="Contraseña"
             placeholder="Contraseña"
-            {...register("password")}
-            focused={watch("password") ? true : false}
             type="password"
             defaultValue="123456"
-            error={errors.password ? true : false}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Lock/>
-                </InputAdornment>
-              ),
-            }}
+            endAdornment={<LockIcon/>}
           />
         </Box>
         <LoadingButton
-          variant="contained"
-          type="submit"
-          size="large"
-          loading={isSubmitting}
           sx={{
             width: "100%",
             marginTop: 5
           }}
+          variant="contained"
+          type="submit"
+          size="large"
+          startIcon={<LoginIcon/>}
+          loading={isSubmitting}
         >
           Ingresar
         </LoadingButton>
@@ -157,3 +143,5 @@ export default function Login() {
     </Box>
   )
 }
+
+export const getServerSideProps = withoutAuth;
